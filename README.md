@@ -61,6 +61,27 @@ oc apply -f gitopscluster.yaml
 oc apply -f managedclusteraddon-cluster1.yaml
 ```
 
+## Namespace Permissions
+
+OpenShift GitOps is namespace-scoped by default. The ArgoCD application controller on each managed cluster must be granted access to any namespace it manages. Label target namespaces on the managed cluster so the GitOps operator creates the necessary RoleBindings:
+
+```bash
+oc label namespace <target-namespace> argocd.argoproj.io/managed-by=openshift-gitops
+```
+
+If the namespace is created as part of your Application manifests, include the label in the Namespace resource:
+
+```yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: my-app
+  labels:
+    argocd.argoproj.io/managed-by: openshift-gitops
+```
+
+Without this label, syncs will fail with "is forbidden" errors for the application controller service account.
+
 ## Verification
 
 ```bash
